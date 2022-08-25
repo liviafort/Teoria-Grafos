@@ -371,4 +371,4 @@ class MeuGrafo(GrafoListaAdjacencia):
 
             novoGrafo.adicionaAresta(aresta, v1, v2, peso)
 
-        return
+        return novoGrafo
