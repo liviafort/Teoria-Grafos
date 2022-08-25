@@ -1,10 +1,45 @@
 import unittest
-from meu_grafo_matriz_adjacencia_nao_dir import *
+from meu_grafo import *
 from bibgrafo.grafo_exceptions import *
 
 class TestGrafo(unittest.TestCase):
 
     def setUp(self):
+
+        # Grafos da Paraíba com PESO
+        self.g_pP1 = MeuGrafo(['J', 'C', 'E', 'P', 'M', 'T', 'Z'])
+        self.g_pP1.adicionaAresta('a1', 'J', 'C', 5)
+        self.g_pP1.adicionaAresta('a2', 'C', 'E', 3)
+        self.g_pP1.adicionaAresta('a3', 'C', 'E', 4)
+        self.g_pP1.adicionaAresta('a4', 'P', 'C', 2)
+        self.g_pP1.adicionaAresta('a5', 'P', 'C', 1)
+        self.g_pP1.adicionaAresta('a6', 'T', 'C', 5)
+        self.g_pP1.adicionaAresta('a7', 'M', 'C', 7)
+        self.g_pP1.adicionaAresta('a8', 'M', 'T', 8)
+        self.g_pP1.adicionaAresta('a9', 'T', 'Z', 9)
+
+        self.g_pP2 = MeuGrafo(['J', 'C', 'E', 'P'])
+        self.g_pP2.adicionaAresta('a1', 'J', 'C', 2)
+        self.g_pP2.adicionaAresta('a2', 'J', 'E', 6)
+        self.g_pP2.adicionaAresta('a3', 'J', 'P', 4)
+        self.g_pP2.adicionaAresta('a4', 'E', 'C', 2)
+        self.g_pP2.adicionaAresta('a5', 'P', 'C', 5)
+        self.g_pP2.adicionaAresta('a6', 'P', 'E', 3)
+
+        # grafos com peso para testes
+        self.g_p_COMPESO = MeuGrafo(['J', 'C', 'E', 'P', 'M', 'T', 'Z'])
+        self.g_p_COMPESO.adicionaAresta('a1', 'J', 'C', 5)
+        self.g_p_COMPESO.adicionaAresta('a2', 'C', 'E', 3)
+        self.g_p_COMPESO.adicionaAresta('a5', 'P', 'C', 1)
+        self.g_p_COMPESO.adicionaAresta('a6', 'T', 'C', 5)
+        self.g_p_COMPESO.adicionaAresta('a7', 'M', 'C', 7)
+        self.g_p_COMPESO.adicionaAresta('a9', 'T', 'Z', 9)
+
+        self.g_p_COMPESO2 = MeuGrafo(['J', 'C', 'E', 'P'])
+        self.g_p_COMPESO2.adicionaAresta('a1', 'J', 'C', 2)
+        self.g_p_COMPESO2.adicionaAresta('a4', 'E', 'C', 2)
+        self.g_p_COMPESO2.adicionaAresta('a6', 'P', 'E', 3)
+
 
         # Grafo TESTE CICLO
         self.g_pNOVO3 = MeuGrafo(['J', 'C', 'E', 'P', 'M'])
@@ -19,7 +54,6 @@ class TestGrafo(unittest.TestCase):
         self.g_pNOVO2.adicionaAresta('a2', 'C', 'E')
         self.g_pNOVO2.adicionaAresta('a3', 'C', 'E')
         self.g_pNOVO2.adicionaAresta('a4', 'M', 'P')
-
 
         #Grafo TESTE CONEXO
         self.g_pNOVO = MeuGrafo(['J', 'C', 'E', 'P', 'M', 'T', 'Z', 'K', 'W'])
@@ -288,10 +322,12 @@ class TestGrafo(unittest.TestCase):
         self.assertEqual(self.g_pNOVO2.djikstra("C", "E"), ['C', 'E'])
         self.assertEqual(self.g_p2.djikstra("P", "M"), ['P', 'C', 'M'])
 
+    def test_kruskall(self):
+        self.assertEqual(self.g_pP1.kruskall(), self.g_p_COMPESO)
+        self.assertEqual(self.g_pP2.kruskall(), self.g_p_COMPESO2)
 
-
-
-
+    def test_prim(self):
+        self.assertEqual(self.g_pP1.prim(), self.g_p_COMPESO)
 
 
 

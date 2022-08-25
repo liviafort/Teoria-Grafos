@@ -1,5 +1,6 @@
 from bibgrafo.grafo_lista_adjacencia import GrafoListaAdjacencia
 from bibgrafo.grafo_exceptions import *
+from math import inf
 
 
 class MeuGrafo(GrafoListaAdjacencia):
@@ -86,23 +87,59 @@ class MeuGrafo(GrafoListaAdjacencia):
         return arvore
 
     def bfs(self, V=''):
-        arvore = list()
-        visitados = list()
-        visitados.append(V)
-        fila = []
-        fila.append(V)
-        while fila:
-            verticeRetirado = fila.pop(0)
-            for i in self.arestas_sobre_vertice2(verticeRetirado):
-                if self.A[i].getV1() != verticeRetirado:
-                    novoV = self.A[i].getV1()
-                else:
-                    novoV = self.A[i].getV2()
-                if novoV not in visitados:
-                    fila.append(novoV)
-                    arvore.append("{}-{}".format(self.A[i].getV1(), self.A[i].getV2()))
-                    visitados.append(novoV)
-        return arvore
+        bfs = MeuGrafo(self.N[::])
+        verticesVisitados = [V]
+        fila = [V]
+        temVertice = False
+
+        for v in self.N:
+            if v == V:
+                temVertice = True
+
+        while (len(fila) != 0):
+            for a in self.A:
+                v1 = self.A[a].getV1()
+                v2 = self.A[a].getV2()
+                verticeAnalisado = fila[0]
+
+                if v1 == verticeAnalisado or v2 == verticeAnalisado:
+                    verticeAdjacente = v2 if verticeAnalisado == v1 else v1
+
+                    if verticeAdjacente not in verticesVisitados:
+                        fila.append((verticeAdjacente))
+                        verticesVisitados.append(verticeAdjacente)
+                        bfs.adicionaAresta(a, verticeAnalisado, verticeAdjacente)
+            fila.pop(0)
+        if (temVertice == False):
+            raise VerticeInvalidoException("O vértice", V, "não existe no grafo")
+        else:
+            return bfs
+
+    def bfs_aux(self, V=''):
+        bfs = MeuGrafo([V])
+
+        verticesVisitados = [V]
+        fila = [V]
+        listaBfs = [V]
+
+        while (len(fila) != 0):
+            for a in self.A:
+                v1 = self.A[a].getV1()
+                v2 = self.A[a].getV2()
+                verticeAnalisado = fila[0]
+
+                if v1 == verticeAnalisado or v2 == verticeAnalisado:
+                    verticeAdjacente = v2 if verticeAnalisado == v1 else v1
+
+                    if verticeAdjacente not in verticesVisitados:
+                        bfs.adicionaVertice(verticeAdjacente)
+                        fila.append((verticeAdjacente))
+                        verticesVisitados.append(verticeAdjacente)
+                        bfs.adicionaAresta(a, verticeAnalisado, verticeAdjacente)
+                        listaBfs.append(verticeAdjacente)
+
+            fila.pop(0)
+        return listaBfs
 
 
     def eh_completo(self):
@@ -177,14 +214,12 @@ class MeuGrafo(GrafoListaAdjacencia):
             if (lista_a[aresta].getV1() == x) and (lista_a[aresta].getV2() == y):
                 return aresta
 
-    def caminho(self, tamanho):
-        lista = []
-        lista_v = self.N
-        v = lista_v[0]
-        lista = self.caminho_rec(v, tamanho, lista)
-        if lista is None:
-            return False
-        return lista
+    def caminho(grafo, v1, v2):
+        g = grafo.bfs(v1)
+        for i in g.A:
+            if g.A[i].v1 == v2 or g.A[i].v2 == v2:
+                return True
+        return False
 
     def caminho_rec(self, v, tam, lis):
         lista_aresta = self.A
@@ -220,4 +255,120 @@ class MeuGrafo(GrafoListaAdjacencia):
                     elif v2 != v:
                         self.caminho_rec(v2, tam, lis)
 
+    def prim(self):
+        verticeInicial = self.arestaMenorPeso()
 
+        novoGrafo = MeuGrafo([verticeInicial])
+        listaDeVertices = list(verticeInicial)
+
+        while len(self.N) != len(listaDeVertices):
+            vMenorPeso = inf
+            verticeForaDaArvore = 0
+            arestaMenorPeso = 0
+
+            for a in self.A:
+                arestaAtual = self.A[a]
+                vertice1 = arestaAtual.getV1()
+                vertice2 = arestaAtual.getV2()
+
+                if vertice1 in listaDeVertices and vertice2 not in listaDeVertices:
+                    if arestaAtual.getPeso() < vMenorPeso:
+                        vMenorPeso = arestaAtual.getPeso()
+                        arestaMenorPeso = a
+                        verticeForaDaArvore = vertice2
+
+                elif vertice2 in listaDeVertices and vertice1 not in listaDeVertices:
+                    if arestaAtual.getPeso() < vMenorPeso:
+                        vMenorPeso = arestaAtual.getPeso()
+                        arestaMenorPeso = a
+                        verticeForaDaArvore = vertice1
+
+            if arestaMenorPeso == 0:
+                return False
+
+            arestaMenorPeso = self.A[arestaMenorPeso]
+            listaDeVertices.append(verticeForaDaArvore)
+            novoGrafo.adicionaVertice(verticeForaDaArvore)
+
+            aresta = arestaMenorPeso.getRotulo()
+            v1 = arestaMenorPeso.getV1()
+            v2 = arestaMenorPeso.getV2()
+            peso = arestaMenorPeso.getPeso()
+
+            novoGrafo.adicionaAresta(aresta, v1, v2, peso)
+
+        return novoGrafo
+
+    def kruskall(self):
+        arvore = MeuGrafo(self.N)
+        arestas = {}
+
+        for a in self.A:
+            arestas[self.A[a].rotulo] = self.A[a].peso
+
+        arestas = sorted(arestas, key=arestas.get)
+        cont = 0
+
+        while True:
+            if not arvore.caminho(self.A[arestas[cont]].v1, self.A[arestas[cont]].v2):
+                arvore.adicionaAresta(self.A[arestas[cont]].rotulo, self.A[arestas[cont]].v1, self.A[arestas[cont]].v2,
+                                      self.A[arestas[cont]].peso)
+            cont += 1
+            if arvore.eh_conexo():
+                break
+
+        return arvore
+
+    def arestaMenorPeso(self):
+        listaArestas = list(self.A)
+        menorPeso = listaArestas[0]
+
+        for a in self.A:
+            if (self.A[a].getPeso() < self.A[menorPeso].getPeso()):
+                menorPeso = a
+
+        return self.A[menorPeso].getV1()
+
+    def primmod(self):
+        verticeInicial = self.arestaMenorPeso()
+
+        novoGrafo = MeuGrafo([verticeInicial])
+        listaDeVertices = list(verticeInicial)
+
+        while len(self.N) != len(listaDeVertices):
+            vMenorPeso = inf
+            verticeForaDaArvore = 0
+            arestaMenorPeso = 0
+
+            for a in self.A:
+                arestaAtual = self.A[a]
+                vertice1 = arestaAtual.getV1()
+                vertice2 = arestaAtual.getV2()
+
+                if vertice1 in listaDeVertices and vertice2 not in listaDeVertices:
+                    if arestaAtual.getPeso() < vMenorPeso:
+                        vMenorPeso = arestaAtual.getPeso()
+                        arestaMenorPeso = a
+                        verticeForaDaArvore = vertice2
+
+                elif vertice2 in listaDeVertices and vertice1 not in listaDeVertices:
+                    if arestaAtual.getPeso() < vMenorPeso:
+                        vMenorPeso = arestaAtual.getPeso()
+                        arestaMenorPeso = a
+                        verticeForaDaArvore = vertice1
+
+            if arestaMenorPeso == 0:
+                return False
+
+            arestaMenorPeso = self.A[arestaMenorPeso]
+            listaDeVertices.append(verticeForaDaArvore)
+            novoGrafo.adicionaVertice(verticeForaDaArvore)
+
+            aresta = arestaMenorPeso.getRotulo()
+            v1 = arestaMenorPeso.getV1()
+            v2 = arestaMenorPeso.getV2()
+            peso = arestaMenorPeso.getPeso()
+
+            novoGrafo.adicionaAresta(aresta, v1, v2, peso)
+
+        return
