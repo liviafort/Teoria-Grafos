@@ -328,6 +328,7 @@ class TestGrafo(unittest.TestCase):
 
     def test_prim(self):
         self.assertEqual(self.g_pP1.prim(), self.g_p_COMPESO)
+        self.assertEqual(self.g_pP2.prim(), self.g_p_COMPESO2)
 
 
 
